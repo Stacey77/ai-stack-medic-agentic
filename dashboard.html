@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiger7 - Exoskeleton Repair Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.3em;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-operational {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-critical {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .metric {
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .sensor-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .sensor-name {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .sensor-value {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .alert-list {
+            list-style: none;
+        }
+
+        .alert-item {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-color: #ffc107;
+        }
+
+        .alert-critical {
+            background: #f8d7da;
+            border-color: #dc3545;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border-color: #17a2b8;
+        }
+
+        .repair-steps {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .repair-step {
+            counter-increment: step-counter;
+            padding: 12px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            position: relative;
+            padding-left: 45px;
+        }
+
+        .repair-step::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            width: 25px;
+            height: 25px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-style: italic;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Tiger7 - Exoskeleton Repair Dashboard</h1>
+            <p class="subtitle">Agentic AI Stack Medic - Real-time Monitoring & Diagnostics</p>
+        </header>
+
+        <!-- System Overview -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">System Status</span>
+                    <span class="status-badge status-operational">Operational</span>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Overall Health Score</div>
+                    <div class="metric-value">87%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 87%;"></div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Active Exoskeletons</div>
+                    <div class="metric-value">12</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Pending Repairs</div>
+                    <div class="metric-value">3</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">AI Agent Status</span>
+                    <span class="status-badge status-operational">Active</span>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Model Accuracy</div>
+                    <div class="metric-value">94.3%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 94.3%;"></div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Diagnostics Completed Today</div>
+                    <div class="metric-value">47</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Self-Healing Events</div>
+                    <div class="metric-value">2</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Power Systems</span>
+                    <span class="status-badge status-warning">Warning</span>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Average Battery Level</div>
+                    <div class="metric-value">68%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 68%;"></div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Power Cells Degraded</div>
+                    <div class="metric-value">2</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sensor Telemetry -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Real-time Sensor Telemetry</span>
+                </div>
+                <div class="sensor-grid">
+                    <div class="sensor-item">
+                        <div class="sensor-name">Temperature</div>
+                        <div class="sensor-value">42.3°C</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div class="sensor-name">Pressure</div>
+                        <div class="sensor-value">98.2 kPa</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div class="sensor-name">Actuator Load</div>
+                        <div class="sensor-value">73%</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div class="sensor-name">Joint Angle</div>
+                        <div class="sensor-value">45.7°</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div class="sensor-name">Vibration</div>
+                        <div class="sensor-value">0.12 m/s²</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div class="sensor-name">Current Draw</div>
+                        <div class="sensor-value">3.8 A</div>
+                    </div>
+                </div>
+                <button onclick="refreshSensors()">🔄 Refresh Data</button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Active Alerts</span>
+                </div>
+                <ul class="alert-list">
+                    <li class="alert-item alert-critical">
+                        <strong>CRITICAL:</strong> Actuator #3 temperature exceeds threshold (58°C)
+                        <div class="timestamp">2 minutes ago</div>
+                    </li>
+                    <li class="alert-item alert-warning">
+                        <strong>WARNING:</strong> Battery cell degradation detected on Unit EXO-7
+                        <div class="timestamp">15 minutes ago</div>
+                    </li>
+                    <li class="alert-item alert-info">
+                        <strong>INFO:</strong> Scheduled maintenance due for Joint Assembly #2
+                        <div class="timestamp">1 hour ago</div>
+                    </li>
+                </ul>
+                <button onclick="acknowledgeAlerts()">✓ Acknowledge All</button>
+            </div>
+        </div>
+
+        <!-- Diagnostics & Repair -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Latest Diagnostics</span>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Fault Classification</div>
+                    <div class="sensor-value">Actuator Thermal Overload</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Confidence Score</div>
+                    <div class="metric-value">96.7%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 96.7%;"></div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Model Used</div>
+                    <div class="sensor-value">Vertical AI - Actuator Degradation v2.3</div>
+                </div>
+                <div class="chart-placeholder">
+                    📊 Diagnostic Trend Chart (Chart.js integration placeholder)
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Recommended Repair Steps</span>
+                </div>
+                <ol class="repair-steps">
+                    <li class="repair-step">
+                        Power down Actuator #3 and engage safety lock
+                    </li>
+                    <li class="repair-step">
+                        Inspect thermal paste application on heat sink assembly
+                    </li>
+                    <li class="repair-step">
+                        Replace thermal interface material if degraded
+                    </li>
+                    <li class="repair-step">
+                        Verify cooling fan operation and clean dust filters
+                    </li>
+                    <li class="repair-step">
+                        Run diagnostic test sequence and validate temperature baseline
+                    </li>
+                </ol>
+                <div class="metric">
+                    <div class="metric-label">Estimated Completion Time</div>
+                    <div class="sensor-value">45 minutes</div>
+                </div>
+                <button onclick="startRepair()">🔧 Begin Repair Protocol</button>
+            </div>
+        </div>
+
+        <!-- Model Performance -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">AI Model Performance Metrics</span>
+            </div>
+            <div class="sensor-grid">
+                <div class="sensor-item">
+                    <div class="sensor-name">AGI Model Uptime</div>
+                    <div class="sensor-value">99.8%</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-name">Synthetic Data Generated</div>
+                    <div class="sensor-value">12,847</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-name">Vertical Models Active</div>
+                    <div class="sensor-value">7</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-name">Self-Replication Events</div>
+                    <div class="sensor-value">3</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-name">Average Response Time</div>
+                    <div class="sensor-value">1.2s</div>
+                </div>
+                <div class="sensor-item">
+                    <div class="sensor-name">Model Version</div>
+                    <div class="sensor-value">v3.1.4</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulated real-time data updates
+        function refreshSensors() {
+            alert('🔄 Refreshing sensor data...\n\nIn a production environment, this would fetch live telemetry from the exoskeleton units via API.');
+        }
+
+        function acknowledgeAlerts() {
+            alert('✓ All alerts acknowledged.\n\nNotifications have been logged to the system.');
+        }
+
+        function startRepair() {
+            if (confirm('Are you sure you want to begin the automated repair protocol?\n\nThis will engage Tiger7\'s autonomous repair sequence.')) {
+                alert('🤖 Tiger7 repair protocol initiated.\n\nMonitoring repair progress...');
+            }
+        }
+
+        // Auto-refresh simulation (would be replaced with real WebSocket/API calls)
+        setInterval(() => {
+            console.log('Background telemetry refresh...');
+        }, 5000);
+    </script>
+</body>
+</html>
